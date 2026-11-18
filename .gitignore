@@ -1,0 +1,49 @@
+# ==========================================
+# AaharIN Cloud Sync - Master Git Ignore
+# ==========================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Production Build Output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Vite / Bundler Cache
+.vite/
+.vite-temp/
+.rollup.cache/
+
+# Environment Variables & Secrets (Keep .env.example tracked)
+.env
+.env*.local
+.env.production
+.env.staging
+
+# Log Files
+logs/
+*.log
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary / Scratch Dumps
+tmp/
+temp/
+coverage/

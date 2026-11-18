@@ -1,0 +1,11 @@
+{
+  "appId": "in.vaiditech.aaharin.owner",
+  "appName": "AaharIN Live",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}
+
