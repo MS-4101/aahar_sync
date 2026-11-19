@@ -30,7 +30,7 @@ exports.pushSnapshot = async (req, res) => {
  * Endpoint for Real-time SSE Stream (Mobile App)
  * GET /api/v1/sync/stream/:restaurantId
  */
-exports.streamLive = (req, res) => {
+exports.streamLive = async (req, res) => {
   const restaurantId = parseInt(req.params.restaurantId, 10);
   if (!restaurantId || restaurantId <= 0) {
     return res.status(400).json({ error: 'Invalid restaurant ID.' });
@@ -39,10 +39,14 @@ exports.streamLive = (req, res) => {
   // Connect client to SSE channel
   sseService.addClient(restaurantId, res);
 
-  // If we already have a cached state, send it immediately upon connection!
-  const currentState = syncService.getLatestState(restaurantId);
-  if (currentState) {
-    res.write(`event: live_update\ndata: ${JSON.stringify(currentState.payload)}\n\n`);
+  // If we already have a cached state (or can extract from DB), send it immediately upon connection!
+  try {
+    const currentState = await syncService.getLatestState(restaurantId);
+    if (currentState && currentState.payload) {
+      res.write(`event: live_update\ndata: ${JSON.stringify(currentState.payload)}\n\n`);
+    }
+  } catch (err) {
+    console.error('[SSE stream initial state error]:', err.message);
   }
 };
 
@@ -50,28 +54,33 @@ exports.streamLive = (req, res) => {
  * Standard REST fallback for initial screen load
  * GET /api/v1/sync/live/:restaurantId
  */
-exports.getLiveState = (req, res) => {
+exports.getLiveState = async (req, res) => {
   const restaurantId = parseInt(req.params.restaurantId, 10);
   if (!restaurantId || restaurantId <= 0) {
     return res.status(400).json({ error: 'Invalid restaurant ID.' });
   }
 
-  const currentState = syncService.getLatestState(restaurantId);
-  if (!currentState) {
-    return res.status(200).json({
-      status: 'WAITING_FOR_FIRST_SYNC',
-      restaurantId,
-      message: 'No sync data received yet for this restaurant.',
-      data: null,
-    });
-  }
+  try {
+    const currentState = await syncService.getLatestState(restaurantId);
+    if (!currentState || !currentState.payload) {
+      return res.status(200).json({
+        status: 'WAITING_FOR_FIRST_SYNC',
+        restaurantId,
+        message: 'No sync data received yet for this restaurant.',
+        data: null,
+      });
+    }
 
-  return res.status(200).json({
-    status: 'ONLINE',
-    restaurantId,
-    lastReceivedAt: currentState.lastReceivedAt,
-    data: currentState.payload,
-  });
+    return res.status(200).json({
+      status: 'ONLINE',
+      restaurantId,
+      lastReceivedAt: currentState.lastReceivedAt,
+      data: currentState.payload,
+    });
+  } catch (err) {
+    console.error('[getLiveState error]:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
 };
 
 /**
