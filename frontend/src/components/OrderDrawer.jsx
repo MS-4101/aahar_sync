@@ -48,8 +48,28 @@ export const OrderDrawer = ({ table, order, onClose }) => {
   // Build Chronological Timeline Events
   const timelineEvents = [];
 
-  // 1. Order Punch Event
-  if (createdTime) {
+  // 1. KOT Tickets from orderObj.kots (Shows every addition KOT)
+  if (orderObj?.kots && Array.isArray(orderObj.kots) && orderObj.kots.length > 0) {
+    orderObj.kots.forEach((kot, idx) => {
+      const kotTime = kot.created_on || createdTime;
+      const kotNum = kot.kot_number || (idx + 1);
+      const isFirst = idx === 0;
+      const itemsList = Array.isArray(kot.items) && kot.items.length > 0
+        ? kot.items.map(i => `${i.qty || 1}x ${i.item_name || i.name}`).join(', ')
+        : `${kot.items_count || 0} items`;
+
+      timelineEvents.push({
+        time: String(kotTime).substring(11, 16) || '--',
+        fullTime: kotTime,
+        type: 'kot',
+        title: isFirst ? `KOT #${kotNum} Placed (Initial Order)` : `KOT #${kotNum} Placed (Items Added)`,
+        description: `Captain ${kot.server_name || captainName} generated KOT: ${itemsList}.`,
+        badge: `KOT #${kotNum}`,
+        badgeColor: isFirst ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-orange-100 text-orange-800 border-orange-200',
+        icon: UtensilsCrossed,
+      });
+    });
+  } else if (createdTime) {
     timelineEvents.push({
       time: String(createdTime).substring(11, 16) || String(createdTime),
       fullTime: createdTime,
@@ -76,17 +96,17 @@ export const OrderDrawer = ({ table, order, onClose }) => {
     });
   }
 
-  // 3. Voids / Cancellation Events (Now available for BOTH live running orders and completed bills)
+  // 3. Voids / Cancellation Events (From cancel KOTs or voided items)
   if (orderObj?.voided_items && Array.isArray(orderObj.voided_items) && orderObj.voided_items.length > 0) {
     orderObj.voided_items.forEach((v) => {
       const vTime = String(v.voided_at || v.created_on || '').substring(11, 16);
       timelineEvents.push({
         time: vTime || '--',
-        fullTime: v.voided_at,
+        fullTime: v.voided_at || v.created_on,
         type: 'void',
-        title: `Item Cancelled: ${v.qty || 1}x ${v.item_name}`,
-        description: `Staff voided item before billing. Removed ₹${(parseFloat(v.price || 0) * parseFloat(v.qty || 1)).toFixed(2)} from running order.`,
-        badge: 'Void Alert',
+        title: `KOT Cancelled: ${v.qty || 1}x ${v.item_name}`,
+        description: `Staff cancelled item from order.${v.reason ? ' (' + v.reason + ')' : ''}`,
+        badge: 'KOT Cancel',
         badgeColor: 'bg-rose-100 text-rose-800 border-rose-200',
         icon: AlertTriangle,
       });
