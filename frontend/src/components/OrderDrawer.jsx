@@ -287,32 +287,38 @@ export const OrderDrawer = ({ table, order, onClose }) => {
                 )}
 
                 {/* Itemized List */}
-                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 bg-white">
-                  {(orderObj?.items || []).map((it, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 flex items-center justify-between text-xs hover:bg-slate-50/50 transition-colors"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                          <span className="text-[11px] font-mono font-black text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded">
-                            {it.qty}x
-                          </span>
-                          <span className="truncate">{it.item_name}</span>
+                {(orderObj?.items || []).length > 0 ? (
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 bg-white">
+                    {orderObj.items.map((it, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 flex items-center justify-between text-xs hover:bg-slate-50/50 transition-colors"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                            <span className="text-[11px] font-mono font-black text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded">
+                              {it.qty}x
+                            </span>
+                            <span className="truncate">{it.item_name}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            ₹{Number(it.price || 0).toFixed(2)} each
+                          </div>
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          ₹{Number(it.price || 0).toFixed(2)} each
-                        </div>
-                      </div>
 
-                      <div className="text-right flex-shrink-0">
-                        <span className="font-bold text-slate-900 font-mono text-sm">
-                          ₹{(Number(it.qty || 1) * Number(it.price || 0)).toFixed(2)}
-                        </span>
+                        <div className="text-right flex-shrink-0">
+                          <span className="font-bold text-slate-900 font-mono text-sm">
+                            ₹{(Number(it.qty || 1) * Number(it.price || 0)).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 text-center text-xs text-slate-500">
+                    No item breakdown found. See Activity Timeline for KOT details.
+                  </div>
+                )}
 
                 {/* Bill Summary & Grand Total */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
