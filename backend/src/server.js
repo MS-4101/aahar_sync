@@ -14,7 +14,11 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health Check
+// Health Check & Root Handlers
+app.get('/', (req, res) => {
+  res.status(200).send('AaharIN Cloud Sync API is active.');
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'HEALTHY',
